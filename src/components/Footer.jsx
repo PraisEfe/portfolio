@@ -81,9 +81,6 @@ export default function Footer() {
         <p>
           &copy; {new Date().getFullYear()} {personalInfo.name}. All rights reserved.
         </p>
-        <p className="flex items-center gap-1">
-          Engineered with React 19 &amp; Tailwind CSS
-        </p>
       </div>
     </footer>
   );

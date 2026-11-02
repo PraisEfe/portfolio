@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import ProjectVisual from "./ProjectVisual";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Sparkles, Star, GitFork, FolderGit2, RefreshCw, AlertCircle } from "lucide-react";
 import { GithubIcon } from "./SocialIcons";
@@ -40,11 +41,7 @@ export default function Projects() {
     }
   };
 
-  useEffect(() => {
-    if (activeTab === "github" && repos.length === 0) {
-      fetchGithubRepos();
-    }
-  }, [activeTab]);
+
 
   return (
     <section id="projects" className="py-12 sm:py-16">
@@ -56,7 +53,7 @@ export default function Projects() {
             <span>Portfolio &amp; Open Source</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Projects &amp; GitHub Repositories
+            Selected work<span className="text-[#2E9FB1]">.</span>
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-base max-w-xl">
             Explore featured product case studies or inspect live code repositories directly connected to GitHub.
@@ -66,6 +63,7 @@ export default function Projects() {
         {/* View Mode Switcher: Featured vs Live GitHub */}
         <div className="flex items-center p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
           <button
+            aria-pressed={activeTab === "featured"}
             onClick={() => setActiveTab("featured")}
             className={`text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer ${
               activeTab === "featured"
@@ -76,7 +74,8 @@ export default function Projects() {
             Featured Case Studies
           </button>
           <button
-            onClick={() => setActiveTab("github")}
+            aria-pressed={activeTab === "github"}
+            onClick={() => { setActiveTab("github"); if (!repos.length && !loadingRepos) fetchGithubRepos(); }}
             className={`flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer ${
               activeTab === "github"
                 ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold"
@@ -97,6 +96,7 @@ export default function Projects() {
             {categories.map((cat) => (
               <button
                 key={cat}
+                aria-pressed={filter === cat}
                 onClick={() => setFilter(cat)}
                 className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
                   filter === cat
@@ -123,31 +123,10 @@ export default function Projects() {
                   className="group bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between overflow-hidden"
                 >
                   <div>
-                    {/* Visual Header / Banner */}
-                    <div className="relative h-44 bg-gradient-to-tr from-slate-900 via-slate-800 to-[#1e5863] p-6 flex flex-col justify-between overflow-hidden">
-                      <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#33A1B2_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                      
-                      <div className="relative z-10 flex items-center justify-between">
-                        <span className="text-xs font-semibold text-teal-300 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                          {project.category}
-                        </span>
-                        <span className="text-xs font-mono text-slate-300 bg-black/40 px-2 py-0.5 rounded-md">
-                          0{project.id}
-                        </span>
-                      </div>
-
-                      <div className="relative z-10">
-                        <h3 className="text-xl font-bold text-white group-hover:text-teal-200 transition-colors">
-                          {project.title}
-                        </h3>
-                        <p className="text-xs text-slate-300 line-clamp-1 mt-1">
-                          {project.tagline}
-                        </p>
-                      </div>
-                    </div>
+                    <ProjectVisual id={project.id} />
 
                     {/* Content Body */}
-                    <div className="p-6 space-y-4">
+                    <div className="p-6 space-y-4"><p className="eyebrow">{project.category} / 0{project.id}</p><h3 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{project.title}</h3>
                       <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                         {project.description}
                       </p>
@@ -178,7 +157,7 @@ export default function Projects() {
                       rel="noreferrer"
                       className="flex-1 inline-flex items-center justify-center gap-2 bg-[#2E9FB1] hover:bg-[#258999] text-white text-xs font-semibold py-2.5 px-4 rounded-xl shadow-xs transition-colors"
                     >
-                      <span>Live Preview</span>
+                      <span>{project.liveUrl.includes("github.com") ? "View project" : "Live preview"}</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
 

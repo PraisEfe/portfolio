@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, ArrowUpRight, Download, Send, Sun, Moon } from "lucide-react";
 import { navLinks, personalInfo } from "../data/portfolioData";
 
 export default function Header({ theme, toggleTheme }) {
+  const [activeSection, setActiveSection] = useState("#about");
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -12,6 +13,21 @@ export default function Header({ theme, toggleTheme }) {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting);
+      if (visible.length) setActiveSection(`#${visible[0].target.id}`);
+    }, { rootMargin: "-15% 0px -60% 0px" });
+    document.querySelectorAll("main section[id]").forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const close = (event) => { if (event.key === "Escape") setMobileMenuOpen(false); };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
   }, []);
 
   return (
@@ -39,11 +55,12 @@ export default function Header({ theme, toggleTheme }) {
         </a>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+        <nav className="hidden lg:flex items-center gap-1 lg:gap-2">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
+              aria-current={activeSection === link.href ? "location" : undefined}
               className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               {link.label}
@@ -52,7 +69,7 @@ export default function Header({ theme, toggleTheme }) {
         </nav>
 
         {/* Right CTA Actions & Dark Mode Toggle */}
-        <div className="hidden sm:flex items-center gap-2.5">
+        <div className="hidden lg:flex items-center gap-2.5">
           {/* Light / Dark Mode Toggle */}
           <button
             onClick={toggleTheme}
@@ -63,7 +80,7 @@ export default function Header({ theme, toggleTheme }) {
             {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
           </button>
 
-          <a
+          {personalInfo.resumeUrl !== "#" && <a
             href={personalInfo.resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -71,7 +88,7 @@ export default function Header({ theme, toggleTheme }) {
           >
             <Download className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             Resume
-          </a>
+          </a>}
 
           <a
             href="#contact"
@@ -83,7 +100,7 @@ export default function Header({ theme, toggleTheme }) {
         </div>
 
         {/* Mobile Actions: Dark Mode Toggle & Hamburger */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           <button
             onClick={toggleTheme}
             aria-label="Toggle dark/light mode"
@@ -95,6 +112,8 @@ export default function Header({ theme, toggleTheme }) {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
             className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#33A1B2]"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -104,12 +123,13 @@ export default function Header({ theme, toggleTheme }) {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-2 p-5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div id="mobile-navigation" className="mobile-drawer lg:hidden mt-2 p-5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
           <nav className="flex flex-col gap-1">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
+              aria-current={activeSection === link.href ? "location" : undefined}
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-base font-medium text-slate-700 dark:text-slate-200 hover:text-[#2E9FB1] dark:hover:text-[#2E9FB1] px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
@@ -126,7 +146,7 @@ export default function Header({ theme, toggleTheme }) {
               <span>Contact Me</span>
               <ArrowUpRight className="w-4 h-4 text-teal-300 dark:text-white" />
             </a>
-            <a
+            {personalInfo.resumeUrl !== "#" && <a
               href={personalInfo.resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -134,7 +154,7 @@ export default function Header({ theme, toggleTheme }) {
             >
               <Download className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               Download Resume
-            </a>
+            </a>}
           </div>
         </div>
       )}

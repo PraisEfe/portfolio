@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { Code2, LayoutTemplate, Gauge, Sparkles, CheckCircle2 } from "lucide-react";
 import { services } from "../data/portfolioData";

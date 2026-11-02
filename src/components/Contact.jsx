@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Send, CheckCircle2, Copy, Check, Mail, MapPin, Clock } from "lucide-react";
 import { personalInfo } from "../data/portfolioData";
@@ -11,26 +11,28 @@ export default function Contact() {
     message: "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(personalInfo.email);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(personalInfo.email);
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } catch {
+      window.location.href = `mailto:${personalInfo.email}`;
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
 
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      setFormData({ name: "", email: "", projectType: "Web Development", message: "" });
-    }, 1200);
+    const subject = encodeURIComponent(`${formData.projectType} — ${formData.name}`);
+    const body = encodeURIComponent(`${formData.message}\n\nFrom: ${formData.name}\nReply to: ${formData.email}`);
+    window.location.href = `mailto:${personalInfo.email}?subject=${subject}&body=${body}`;
+    setIsSubmitted(true);
   };
 
   return (
@@ -112,14 +114,14 @@ export default function Contact() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="py-10 text-center space-y-4"
+                  role="status" className="py-10 text-center space-y-4"
                 >
                   <div className="w-14 h-14 bg-teal-50 dark:bg-teal-950/60 text-[#2E9FB1] dark:text-teal-300 rounded-full mx-auto flex items-center justify-center">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Message Received!</h3>
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Your draft is ready.</h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
-                    Thanks for reaching out! I've received your note and will get back to you promptly.
+                    Your email app will open with your message. Press send there to deliver it, or email me directly using the address alongside.
                   </p>
                   <button
                     onClick={() => setIsSubmitted(false)}
@@ -129,13 +131,15 @@ export default function Contact() {
                   </button>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form aria-label="Project enquiry" onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      <label htmlFor="contact-name" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                         Your Name *
                       </label>
                       <input
+                        id="contact-name"
+                        autoComplete="name"
                         type="text"
                         required
                         value={formData.name}
@@ -146,10 +150,12 @@ export default function Contact() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      <label htmlFor="contact-email" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                         Your Email *
                       </label>
                       <input
+                        id="contact-email"
+                        autoComplete="email"
                         type="email"
                         required
                         value={formData.email}
@@ -161,10 +167,10 @@ export default function Contact() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label htmlFor="contact-subject" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       Subject / Project Scope
                     </label>
-                    <select
+                    <select id="contact-subject"
                       value={formData.projectType}
                       onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
                       className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-[#2E9FB1] focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-[#2E9FB1]/20 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition-all"
@@ -177,10 +183,10 @@ export default function Contact() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label htmlFor="contact-message" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       Message / Work Description *
                     </label>
-                    <textarea
+                    <textarea id="contact-message"
                       required
                       rows={4}
                       value={formData.message}
@@ -192,14 +198,12 @@ export default function Contact() {
 
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+
                     className="w-full inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-[#2E9FB1] hover:bg-slate-800 dark:hover:bg-[#258999] disabled:bg-slate-400 text-white font-semibold text-sm py-3 px-6 rounded-xl shadow-md transition-all active:scale-[0.99] cursor-pointer"
                   >
-                    {isSubmitting ? (
-                      <span>Sending Message...</span>
-                    ) : (
+                    {(
                       <>
-                        <span>Submit Proposal</span>
+                        <span>Open email draft</span>
                         <Send className="w-4 h-4 text-teal-300 dark:text-white" />
                       </>
                     )}

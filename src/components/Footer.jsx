@@ -1,5 +1,4 @@
-import React from "react";
-import { ArrowUp, Mail, Heart } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { GithubIcon, LinkedinIcon, TwitterIcon } from "./SocialIcons";
 import { personalInfo, navLinks } from "../data/portfolioData";
 
